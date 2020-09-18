@@ -13,7 +13,6 @@ The table of contents can link to each section so long as you match the names ri
 	- [Subtopic 1-2](#subtopic-1-2)
 	- [Subtopic 1-3](#subtopic-1-3)
 - [Second Big Topic](#topic2)
-- [Third Big Topic](#topic3)
 
 [//]: # (This is how you can make a comment that won't appear in the web page! It might be visible on some machines/browsers so use this only for development.)
 
@@ -99,12 +98,4 @@ As with the labelled equations, it makes a difference whether the lines above an
 
 <a name='Topic 2'></a>
 ## Second Big Topic
-
-How can you experiment with your markdown visualization? At least one group member can follow the instructions on the README.md to install the ruby and jekyll requirements in order to visualize your notes on local host for quick iteration. Once you have a handle on the basic mechanics of Markdown, you can write most of your notes without every team member needing to visualize on their own machine.
-
-We recommend writing your notes on a shared document that everyone can simultaneously edit. Since this code is in Markdown, Google Colab Notebooks are a great tool! They're the google docs of jupyter notebooks. We've provided an example Colab notebook that you can copy and use for collaboratively developing your notes: [link](https://colab.research.google.com/drive/19B1VAXjzQaxuwxwl8VmERDaZPKHqCjkX?usp=sharing), but you're free to use any tools you wish to collaborate!
-
-
-<a name='Topic 3'></a>
-## Third Big Topic
 This should give you the primary tools to develop your notes. Check out the [markdown quick reference](https://wordpress.com/support/markdown-quick-reference/) for any further Markdown functionality that you may find useful, and reach out to the teaching team on Piazza if you have any questions about how to create your lecture notes
