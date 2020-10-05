@@ -1,6 +1,6 @@
 ---
 title: Features and fitting
-keywords: RANSAC, Harris, Local Invariant Features
+keywords: RANSAC, Harris
 order: 5 # Lecture number for 2020
 ---
 
@@ -63,7 +63,7 @@ Least squares regression is a common technique to find a line of best fit for a 
   <img src="{{ site.baseurl }}/assets/pixels/line-fitting-outliers.png">
 </div>
 
-<a name='voting-based'></a>
+<a name='voting-based-fitting'></a>
 ## Voting-based Fitting
 
 We could try to fit the model by exhaustively checking all combination of features. However, this approach is inefficient and bears a O(N<sup>2</sup>) time complexity.
@@ -76,7 +76,7 @@ Voting is a decent alternative. The idea is to have features vote for compatible
 
 <!-- <<image 4.6 slide 11>> -->
 
-<a name='ransac-detailed'></a>
+<a name='random-sample-consensus'></a>
 ## Random Sample Consensus (RANSAC)
 
 Both Hough transform and RANSAC rely on voting to arrive at the optimum model. The part where they differ is in how the model is chosen. As the name suggests, RANSAC introduces randomness in the model selection process. A number of models are proposed until one is found that is supported by a consensus of features (voters). Let's try to understand the algorithm.
@@ -133,4 +133,4 @@ The table below shows the number of samples required for different choices of no
 
 <a name='local-invariant-features'></a>
 
-<a name='harris'></a>
+<a name='harris-corner-detector'></a>
