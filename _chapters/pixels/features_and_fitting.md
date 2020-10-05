@@ -7,7 +7,7 @@ order: 5 # Lecture number for 2020
 [//]: # (TODO!!!  ** overall intro **)
 
 
-Table of content
+Table of contents
 
 - [RANSAC](#ransac)
   - [Lines](#lines)
@@ -25,6 +25,7 @@ Table of content
 
 
 <a name='ransac'></a>
+#RANSAC
 
 In this lecture, we will introduce model fitting for line detection using the RANSAC (Random Sample Consensus) algorithm.
 
@@ -132,5 +133,78 @@ The table below shows the number of samples required for different choices of no
 **Summary**
 
 <a name='local-invariant-features'></a>
+# Local Invariant Features
+
+
+**Motivation**
+Global representations of images have major limitations in identifying small objects. Instead, we must describe and match only local regions. By using local features, we are able to identify objects despite occlusion, articulation, and intra-category variations.
+
+**General Approach**
+
+1. Find a set of distinctive key points in two given images.
+
+2. Define a region around each keypoint (typically done with a square shape).
+
+3. Extract and normalize the region content (this accounts for shift-variance and scale-variance).
+
+4. Compute a local descriptor from the normalized region.
+
+5. Match local descriptors and determine their similarity.
+
+**Requirements**
+
+1. Detect the same point independently in both images: must be able to find the same points independently in both images (need a repeatable keypoint detector to run on both images independently).
+
+2. For each point, correctly recognize the corresponding point in the opposite image (need a reliable and distinctive descriptor to correctly detect these points).
+
+With these two requirements, the region extraction needs to be repeatable and accurate. This way, it will be invariant to translation, rotation, and scale changes. In addition, it will be robust and covariant to affine transofrmations, lighting variations, noise, blur, and quantization.
 
 <a name='harris-corner-detector'></a>
+# Harris Corner Detector
+
+Recall that we have the following goals for keypoint localization:
+- Repeatable detection: keypoint detector can run on different images independently and detect the same keypoints
+- Precise localization: accurately detect keypoints in images at the correct location
+- Interesting content: areas with strong change (not in homogeneous regions, which are not distinctive and hard to match)
+
+**Corners as Distinctive Interest Points**
+- Key property of corners: In the region around a corner, the image gradient has two or more dominant directions (for instance, perpendicular gradients would represent a 90 degree angled corner). 
+- Corners are repeatable and distinctive (can be easily seen from multiple view points, and are very different from their neighbors)
+
+**Design Criteria**
+
+1. Locality: when looking through a small window, we should be able to easily recognize the corner point.
+
+2. Good localization: shifting the window in any direction should give a large change in intensity.
+
+**Examples**
+
+"Flat" region: no change in any direction.
+- Small $\sum I_x^2$ and small $\sum I_y^2$. 
+
+"Edge": no change along the edge direction, but change along the perpendicular dimension.
+- Small $\sum I_x^2$ and large $\sum I_y^2$ for a horizonal edge.
+- Large $\sum I_x^2$ and small $\sum I_y^2$ for a vertical edge.
+
+"Corner": significant change in all directions.
+- Large $\sum I_x^2$ and large $\sum I_y^2$.
+- However, multiple corners that are connected by an index produce issues because we cannot conclude the size of $\sum I_x^2$ and $\sum I_y^2$.
+
+
+**Harris Detector Formulation**
+
+1. Localize patches that result in large change of intensity when shifted in any direction.
+
+2. When we shift by $[u, v]$, the intesity change at the center pixel is measured as intensity difference: 
+
+$$ \begin{equation} I(x + u, y + v) - I(x, y) \end{equation} $$
+
+- This intensity difference measurement is for one single point, but we need to accumulate over the patch around that point as well. Therefore, when we shift by $[u, v]$, the change in intensity for the patch is: 
+
+$$ \begin{equation} E(u, v) = \sum_{x,y}w(x, y)[I(x + u, y + v) - I(x, y)]^2 \end{equation} $$
+
+  - $\sum_{x,y}$ is the sum over the entire window / patch
+  - $w(x, y)$ is the window function
+  - $I(x + u, y + v)$ is the shifted intensity of a given pixel
+  - $I(x, y)$ is the original intensity of a given pixel
+  - $I(x + u, y + v) - I(x, y)$ is the total intensity change for a given pixel
