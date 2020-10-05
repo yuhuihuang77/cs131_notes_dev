@@ -262,7 +262,8 @@ $$
   $$
   I(x+u, y+v) \approx I(x, y) + u I_x + v I_y \; \text{(Taylor expansion)}
   $$
-  \begin{align*}
+  $$
+  \begin{aligned}
   E(u, v) &\approx \sum_{x, y} w(x, y) \left[ u I_x + v I_y \right]^2 \\
   &= \sum_{x, y} w(x, y) \left| 
   \begin{bmatrix} I_x & I_y \end{bmatrix} 
@@ -293,7 +294,8 @@ $$
   \begin{bmatrix} u \\ v \end{bmatrix}  \\
   &= \begin{bmatrix} u & v \end{bmatrix} M
   \begin{bmatrix} u \\ v \end{bmatrix}
-  \end{align*}
+  \end{aligned}
+  $$
 
 - Meaning behind matrix $M$:
   <div class="fig figcenter">
