@@ -13,9 +13,9 @@ Table of content
   - [Lines](#lines)
   - [Model Fitting](#model-fitting)
   - [Voting Based Fitting](#voting-based-fitting)
-  - [R](#r)
+  - [Random Sample Consensus](#random-sample-consensus)
 - [Local Invariant Features](#local-invariant-features)
-- [H](#h)
+- [Harris Corner Detector](#harris-corner-detector)
 
 [//]: # (This is how you can make a comment that won't appear in the web page! It might be visible on some machines/browsers so use this only for development.)
 
