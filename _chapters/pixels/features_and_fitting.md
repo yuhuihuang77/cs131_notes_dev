@@ -1,7 +1,7 @@
 ---
 title: Features and fitting
-keywords: RANSAC, Harris
-order: 5 # Lecture number for 2020
+keywords: RANSAC, Harris, Local Invariant Features
+order: 5
 ---
 
 [//]: # (TODO!!!  ** overall intro **)
@@ -15,6 +15,9 @@ Table of contents
   - [Voting Based Fitting](#voting-based-fitting)
   - [Random Sample Consensus](#random-sample-consensus)
 - [Local Invariant Features](#local-invariant-features)
+  - [Motivaion](#lif-motivation)
+  - [General Approach](#lif-general-approach)
+  - [Requirements for Keypoint Localization](#lif-req-keypoint-loc)
 - [Harris Corner Detector](#harris-corner-detector)
 
 [//]: # (This is how you can make a comment that won't appear in the web page! It might be visible on some machines/browsers so use this only for development.)
@@ -25,7 +28,7 @@ Table of contents
 
 
 <a name='ransac'></a>
-#RANSAC
+# RANSAC
 
 In this lecture, we will introduce model fitting for line detection using the RANSAC (Random Sample Consensus) algorithm.
 
@@ -135,29 +138,52 @@ The table below shows the number of samples required for different choices of no
 <a name='local-invariant-features'></a>
 # Local Invariant Features
 
+**Introduction**
 
+As we enter our segment on local invariant features, it is important to understand where we are in terms of image detection and computer vision. As we will focus on specific features and  pixels within images, we are diving into an area that can cause problems. For example, if we have one picture of the pentagon as a template and this picture is in black and white, will we be able to use computer vision to find the pentagon when we see it from a distance on a plane? What about when we look at two pictures of the same thing but at different angles? How can we make it so the algorithm understands we are looking at images of the same thing? We can solve this problem using local invariant features within our image matching. 
+
+<a name='lif-motivation'></a>
 **Motivation**
-Global representations of images have major limitations in identifying small objects. Instead, we must describe and match only local regions. By using local features, we are able to identify objects despite occlusion, articulation, and intra-category variations.
 
+Global representations of images have major limitations in identifying small objects and image matching, due to potential differences in perspective, scale, and more between images. Instead, we can describe and match local regions. By using local features, we are able to identify objects despite occlusion, articulation, and intra-category variations.
+
+This way, we can solve the issue of image matching and procude an algorithm which is much more effective at detecting which features of each image align regardless of differences in angle, color, brightness, etc.
+
+<a name='lif-general-approach'></a>
 **General Approach**
 
-1. Find a set of distinctive key points in two given images.
+Suppose we have two input images. The task is to identify whther the two images are of the same object. Using local invariant features, the general approach is summarized in the following steps.
 
-2. Define a region around each keypoint (typically done with a square shape).
+1. Find a set of distinctive key points in two given images. For example, these key points can be edges or corners.
 
-3. Extract and normalize the region content (this accounts for shift-variance and scale-variance).
+2. Define a region around each keypoint. Typically, a square region is selected around each keypoint.
 
-4. Compute a local descriptor from the normalized region.
+3. Extract and normalize the region content. This step accounts for shift-variance, scale-variance, as well as changes in lighting conditions.
 
-5. Match local descriptors and determine their similarity.
+4. Compute a local descriptor from the normalized region. The descriptor takes the form of a vector or a function that describes each region.
 
-**Requirements**
+5. Match the keypoints in the input images. This is done by finding the similarities between each local descriptor in both images and matching the most similar keypoints.
 
-1. Detect the same point independently in both images: must be able to find the same points independently in both images (need a repeatable keypoint detector to run on both images independently).
+The figure below summarizes each step and provides a visual description of the general approach.
 
-2. For each point, correctly recognize the corresponding point in the opposite image (need a reliable and distinctive descriptor to correctly detect these points).
+<div class="fig figcenter">
+  <img src="{{ site.baseurl }}/assets/pixels/lif-approach.jpg">
+</div>
 
-With these two requirements, the region extraction needs to be repeatable and accurate. This way, it will be invariant to translation, rotation, and scale changes. In addition, it will be robust and covariant to affine transofrmations, lighting variations, noise, blur, and quantization.
+The process of matching keypoints between two images is called **keypoint localization**.
+
+<a name='lif-req-keypoint-loc'></a>
+**Requirements for Keypoint Localization**
+
+There are many approaches for keypoint localization. However, a good approach is able to achieve the following goals:
+
+1. Detect the same point independently in both images: must be able to find the same points independently in both images (need a **repeatable** keypoint detector to run on both images independently).
+
+2. For each point, correctly recognize the corresponding point in the opposite image (need a **reliable** and **distinctive** descriptor to correctly detect these points).
+
+3. Needs to be invariant to **geometric** (scaling, affine, or out-of-plane transformations, rotation) and **photometric** (lighting, noise, blur, etc.) changes between images
+
+With these requirements, the region extraction needs to be repeatable and accurate. This way, it will be invariant to translation, rotation, and scale changes. In addition, it will be robust and covariant to affine transformations, lighting variations, noise, blur, and quantization.
 
 <a name='harris-corner-detector'></a>
 # Harris Corner Detector
@@ -178,6 +204,9 @@ Recall that we have the following goals for keypoint localization:
 2. Good localization: shifting the window in any direction should give a large change in intensity.
 
 **Examples**
+<div class="fig figcenter">
+  <img src="{{ site.baseurl }}/assets/pixels/flat-edge-corner.png">
+</div>
 
 "Flat" region: no change in any direction.
 - Small $\sum I_x^2$ and small $\sum I_y^2$. 
@@ -200,11 +229,192 @@ Recall that we have the following goals for keypoint localization:
 $$ \begin{equation} I(x + u, y + v) - I(x, y) \end{equation} $$
 
 - This intensity difference measurement is for one single point, but we need to accumulate over the patch around that point as well. Therefore, when we shift by $[u, v]$, the change in intensity for the patch is: 
-
-$$ \begin{equation} E(u, v) = \sum_{x,y}w(x, y)[I(x + u, y + v) - I(x, y)]^2 \end{equation} $$
+<div class="fig figcenter">
+  <img src="{{ site.baseurl }}/assets/pixels/harris-formulation.png">
+</div>
 
   - $\sum_{x,y}$ is the sum over the entire window / patch
   - $w(x, y)$ is the window function
   - $I(x + u, y + v)$ is the shifted intensity of a given pixel
   - $I(x, y)$ is the original intensity of a given pixel
   - $I(x + u, y + v) - I(x, y)$ is the total intensity change for a given pixel
+
+- Approximating the change in patch intensity (with Taylor expansion):
+$$
+E(u, v) \approx
+\begin{bmatrix}
+u & v
+\end{bmatrix}
+M
+\begin{bmatrix}
+u \\ v
+\end{bmatrix}
+$$
+  - where $M$ is a 2x2 matrix computed from image derivatives:
+  <div class="fig figcenter">
+  <img src="{{ site.baseurl }}/assets/pixels/matrixM.png">
+  </div>
+  - graphical intuition for image gradients $I_x, I_y, I_x I_y$:
+  <div class="fig figcenter">
+  <img src="{{ site.baseurl }}/assets/pixels/image-derivative.png">
+  </div>
+  - derivation: 
+  $$
+  I(x+u, y+v) \approx I(x, y) + u I_x + v I_y \; \text{(Taylor expansion)}
+  $$
+  \begin{align*}
+  E(u, v) &\approx \sum_{x, y} w(x, y) \left[ u I_x + v I_y \right]^2 \\
+  &= \sum_{x, y} w(x, y) \left| 
+  \begin{bmatrix} I_x & I_y \end{bmatrix} 
+  \begin{bmatrix} u \\ v \end{bmatrix} \right|^2 \\
+  &= \sum_{x, y} w(x, y) \left( 
+  \begin{bmatrix} I_x & I_y \end{bmatrix} 
+  \begin{bmatrix} u \\ v \end{bmatrix} \right)^T
+  \left( \begin{bmatrix} I_x & I_y \end{bmatrix} 
+  \begin{bmatrix} u \\ v \end{bmatrix} \right) \\
+  &= \sum_{x, y} w(x, y) 
+  \begin{bmatrix} u & v \end{bmatrix} 
+  \begin{bmatrix} I_x \\ I_y \end{bmatrix}
+  \begin{bmatrix} I_x & I_y \end{bmatrix} 
+  \begin{bmatrix} u \\ v \end{bmatrix}  \\
+  &= \sum_{x, y} w(x, y) 
+  \begin{bmatrix} u & v \end{bmatrix} 
+  \begin{bmatrix}
+  I_x^2 & I_x I_y \\
+  I_x I_y & I_y^2
+  \end{bmatrix}
+  \begin{bmatrix} u \\ v \end{bmatrix}  \\
+  &= \begin{bmatrix} u & v \end{bmatrix} \left\{
+  \sum_{x, y} w(x, y) 
+  \begin{bmatrix}
+  I_x^2 & I_x I_y \\
+  I_x I_y & I_y^2
+  \end{bmatrix} \right\}
+  \begin{bmatrix} u \\ v \end{bmatrix}  \\
+  &= \begin{bmatrix} u & v \end{bmatrix} M
+  \begin{bmatrix} u \\ v \end{bmatrix}
+  \end{align*}
+
+- Meaning behind matrix $M$:
+  <div class="fig figcenter">
+  <img src="{{ site.baseurl }}/assets/pixels/axis-aligned-M.png">
+  </div>
+
+  - Consider an axis aligned corner, and assume $w(x, y) = 1$
+  $$
+  M = \sum_{x, y} 
+  \begin{bmatrix}
+  I_x^2 & I_x I_y \\
+  I_x I_y & I_y^2
+  \end{bmatrix}
+  = \begin{bmatrix}
+  \sum I_x^2 & \sum I_x I_y \\
+  \sum I_x I_y & \sum I_y^2
+  \end{bmatrix}
+  = \begin{bmatrix}
+  \lambda_1 & 0 \\
+  0 & \lambda_2
+  \end{bmatrix}
+  $$
+  Pixels on the vertical edge will have $I_y = 0$ and $I_x^2 >> 0$ (marked in green), therefore only contributing to the $\sum I_x^2$ element in matrix $M$. Similarly, pixels on the horizontal edge will have $I_x = 0$ and $I_y^2 >> 0$ (marked in orange), therefore only contributing to the $\sum I_y^2$ element in matrix $M$. Other pixels have $I_x = 0$ and $I_y = 0$ and do not contribute to the sums in the matrix. The only non-zero elements in matrix $M$ are the diagonal elements $\sum I_x^2 = \lambda_1$ and $\sum I_y^2 = \lambda_2$.
+  - Our window contains an axis aligned corner if and only if both $\lambda_1$ and $\lambda_2$ are large. If either $\lambda$ is close to 0, then the window does not contain an axis aligned corner.
+  - In the general case, we can decompose the symmetric matrix $M$ as 
+  $$
+  M = \begin{bmatrix}
+  \sum I_x^2 & \sum I_x I_y \\
+  \sum I_x I_y & \sum I_y^2
+  \end{bmatrix}
+  = R^{-1} \begin{bmatrix}
+  \lambda_1 & 0 \\
+  0 & \lambda_2
+  \end{bmatrix} R \; \text{(eigenvalue decomposition)}
+  $$
+  <div class="fig figcenter">
+  <img src="{{ site.baseurl }}/assets/pixels/rotated-M.png">
+  </div>
+  We can interpret $M$ as an ellipse with its axis length determined by the eigenvalues $\lambda_1$ and $\lambda_2$; and its orientation determined by $R$.
+  A rotated corner will have the same eigenvalues as its non-rotated version, and the rotation will be captured by the rotation matrix $R$.
+  - Interpreting the eigenvalues: 
+  <div class="fig figcenter">
+    <img src="{{ site.baseurl }}/assets/pixels/eigenvalue_harris.png">
+  </div>
+
+  Comparing eigenvalues gives us a good indicator of distinct features of an image: 
+  - $\lambda_2 >> \lambda_1$ or $\lambda_1 >> \lambda_2$: **Edge**
+  - $\lambda_2, \lambda_1 \approx 0$: **Flat**
+  - $\lambda_2 \approx \lambda_1$: **Corner**
+
+- Because calculating eigenvalues, especially for large and hi-res images, is
+   computationally expensive, the **Corner Response Function** is a widely 
+   used, fast alternative: 
+
+   $$ 
+   \theta = det(M) - \alpha trace(M)^2 = \lambda_1 \lambda_2 - \alpha (\lambda_1 + \lambda_2)^2
+   $$
+
+   where $\alpha$ is a constant  (~$0.04 - 0.06)$. 
+
+
+- Window Function
+<div class="fig figcenter">
+  <img src="{{ site.baseurl }}/assets/pixels/window-function.png">
+</div>
+
+  1. Uniform window: 
+  - sum over square window
+  $$
+  M = \sum_{x, y} \begin{bmatrix}
+  I_x^2 & I_x I_y \\
+  I_x I_y & I_y^2
+  \end{bmatrix}
+  $$
+  - problem: not rotation invariant
+
+  2. Smooth with Gaussian
+  - Gaussian already performs weighted sum
+  $$
+  M = g( \sigma ) * \begin{bmatrix}
+  I_x^2 & I_x I_y \\
+  I_x I_y & I_y^2
+  \end{bmatrix}
+  $$
+  - result is rotation invariant
+
+
+**Harris Detector Implementation**
+<div class="fig figcenter">
+  <img src="{{ site.baseurl }}/assets/pixels/harris-summary.png">
+</div>
+<div class="fig figcenter">
+  <img src="{{ site.baseurl }}/assets/pixels/harris-summary2.png">
+</div>
+
+1. Compute image derivatives $\Rightarrow I_x, I_y$
+2. Compute the square of image derivatives $\Rightarrow I_x^2, I_y^2, I_x I_y$
+3. Apply Gaussian filter $g(\sigma_I)$ $\Rightarrow g(I_x^2), g(I_y^2), g(I_x I_y)$
+4. Compute corner response function:
+  - compute matrix $M$ (aka. second moment matrix / autocorrelation matrix)
+  $$
+  M(\sigma_I, \sigma_D) = \begin{bmatrix}
+  I_x^2(\sigma_D) & I_x I_y(\sigma_D) \\
+  I_x I_y(\sigma_D) & I_y^2(\sigma_D)
+  \end{bmatrix}
+  $$
+  - $\sigma_D$: for Gaussian in the derivative calculation
+  - $\sigma_I$: for Gaussian in the windowing function
+  - $$\theta = \text{det}[M(\sigma_I, \sigma_D)] - \alpha \text{trace}[M(\sigma_I, \sigma_D)]^2 = g(I_x^2)g(I_y^2) - [g(I_x I_y)]^2 - \alpha [g(I_x^2) + g(I_y^2)]^2$$
+5. Perform non-maximum suppression
+
+  <div class="fig figcenter">
+    <img src="{{ site.baseurl }}/assets/pixels/harris_response.png">
+  </div>
+  An example of Harris detection of an image.
+
+**Scale Invariance**
+- The Harris corner detector is *translation invariant* and *rotation invariant* (when used with a Gaussian kernel), but it is *not* **scale-invariant**. 
+
+  <div class="fig figcenter">
+    <img src="{{ site.baseurl }}/assets/pixels/sift_scale_invariant.png">
+  </div>
+
+  As shown here, the Harris detector is correctly able to recognize a corner with a small set window, but can no longer identify gradients when the image is enlarged and instead incorrectly identifies edges. This is ultimately why other, scale-invariant feature detectors are used for these purposes. 
